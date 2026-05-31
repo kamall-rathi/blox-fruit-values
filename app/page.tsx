@@ -1,264 +1,338 @@
 'use client';
 
 import Link from 'next/link';
+import { useState } from 'react';
+import {
+  BarChart3, Repeat, Calculator, Star, Gift, MessageSquare,
+  TrendingUp, Zap, Shield, Sparkles, ArrowRight, Apple
+} from 'lucide-react';
 
 const features = [
-  {
-    icon: '📊',
-    title: 'Real-Time Values',
-    description: 'Live market data updated daily by our expert team',
-    href: '/values',
-    color: '#3b82f6',
-  },
-  {
-    icon: '🔄',
-    title: 'Trade Ads',
-    description: 'Post and browse trades with our active community',
-    href: '/trading',
-    color: '#8b5cf6',
-  },
-  {
-    icon: '🧮',
-    title: 'Smart Calculator',
-    description: 'Analyze trades with precision and confidence',
-    href: '/calculator',
-    color: '#06b6d4',
-  },
-  {
-    icon: '⭐',
-    title: 'Safe Trading',
-    description: 'Trusted platform with verified community members',
-    href: '/community',
-    color: '#f59e0b',
-  },
-  {
-    icon: '🎁',
-    title: 'Giveaways',
-    description: 'Participate in exciting community giveaways',
-    href: '/giveaways',
-    color: '#10b981',
-  },
-  {
-    icon: '💬',
-    title: 'Safe Messaging',
-    description: 'Monitored messages to keep trading secure',
-    href: '/messages',
-    color: '#ef4444',
-  },
+  { icon: BarChart3, title: 'Live Values', desc: 'Real-time prices updated by traders. Never overpay again.', href: '/values', accent: '#10b981' },
+  { icon: Repeat, title: 'Trade Ads', desc: 'Post what you have, find what you want. Zero friction.', href: '/trading', accent: '#3b82f6' },
+  { icon: Calculator, title: 'Calculator', desc: 'Drop both sides in. Get instant WIN / FAIR / LOSS verdict.', href: '/calculator', accent: '#8b5cf6' },
+  { icon: Star, title: 'Reputation', desc: 'Rate traders. Build trust. Avoid scammers.', href: '/community', accent: '#f59e0b' },
+  { icon: Gift, title: 'Giveaways', desc: 'Free fruits, daily drops, no catch.', href: '/giveaways', accent: '#ec4899' },
+  { icon: MessageSquare, title: 'Safe Chat', desc: 'Built-in messaging. No Discord doxx.', href: '/messages', accent: '#06b6d4' },
 ];
 
 const stats = [
-  { value: '50K+', label: 'Active Traders' },
-  { value: '100+', label: 'Fruits Tracked' },
-  { value: '24/7', label: 'Live Updates' },
-  { value: '0ms', label: 'Load Time' },
+  { value: '46+', label: 'Fruits Tracked', icon: Apple, color: '#10b981' },
+  { value: '<1s', label: 'Load Time', icon: Zap, color: '#3b82f6' },
+  { value: '24/7', label: 'Updated', icon: TrendingUp, color: '#8b5cf6' },
+  { value: '100%', label: 'Free', icon: Shield, color: '#f59e0b' },
 ];
 
 export default function Home() {
+  const [hovered, setHovered] = useState<string | null>(null);
+
   return (
-    <div style={{ minHeight: '100vh', background: '#0a0a0f' }}>
+    <div style={{ background: '#0a0e1a', minHeight: '100vh' }}>
 
-      {/* Hero */}
+      {/* Background glow */}
       <div style={{
-        position: 'relative',
-        overflow: 'hidden',
-        padding: '100px 24px 80px',
-        textAlign: 'center',
-      }}>
-        {/* Glow blobs */}
-        <div style={{
-          position: 'absolute', top: '-100px', left: '50%',
-          transform: 'translateX(-50%)',
-          width: '600px', height: '600px',
-          background: 'radial-gradient(circle, rgba(59,130,246,0.15) 0%, transparent 70%)',
-          pointerEvents: 'none',
-        }} />
-        <div style={{
-          position: 'absolute', top: '50px', left: '20%',
-          width: '300px', height: '300px',
-          background: 'radial-gradient(circle, rgba(139,92,246,0.1) 0%, transparent 70%)',
-          pointerEvents: 'none',
-        }} />
+        position: 'fixed',
+        top: '-200px',
+        left: '50%',
+        transform: 'translateX(-50%)',
+        width: '800px',
+        height: '800px',
+        background: 'radial-gradient(circle, rgba(16, 185, 129, 0.08) 0%, transparent 70%)',
+        pointerEvents: 'none',
+        zIndex: 0,
+      }} />
 
-        <div style={{ position: 'relative', maxWidth: '800px', margin: '0 auto' }}>
+      {/* HERO */}
+      <section style={{ position: 'relative', padding: '80px 24px 60px', zIndex: 1 }}>
+        <div style={{ maxWidth: '900px', margin: '0 auto', textAlign: 'center' }}>
+
           {/* Badge */}
           <div style={{
-            display: 'inline-flex', alignItems: 'center', gap: '8px',
-            background: 'rgba(59,130,246,0.1)',
-            border: '1px solid rgba(59,130,246,0.3)',
+            display: 'inline-flex',
+            alignItems: 'center',
+            gap: '8px',
+            background: 'rgba(16, 185, 129, 0.08)',
+            border: '1px solid rgba(16, 185, 129, 0.25)',
             borderRadius: '100px',
-            padding: '6px 16px',
-            fontSize: '13px', color: '#93c5fd',
-            marginBottom: '24px',
+            padding: '8px 18px',
+            fontSize: '13px',
+            color: '#10b981',
+            fontWeight: '600',
+            marginBottom: '32px',
           }}>
-            <span style={{ width: '6px', height: '6px', background: '#3b82f6', borderRadius: '50%', display: 'inline-block' }} />
-            #1 Blox Fruits Trading Platform
+            <Sparkles size={14} strokeWidth={2.5} />
+            Faster than the rest
           </div>
 
+          {/* Title */}
           <h1 style={{
-            fontSize: 'clamp(36px, 6vw, 72px)',
+            fontSize: 'clamp(40px, 7vw, 80px)',
             fontWeight: '900',
-            lineHeight: '1.1',
+            lineHeight: '1.05',
+            letterSpacing: '-0.03em',
             marginBottom: '24px',
-            letterSpacing: '-0.02em',
           }}>
-            Blox Fruits{' '}
+            Stop getting{' '}
             <span style={{
-              background: 'linear-gradient(135deg, #3b82f6, #8b5cf6)',
+              background: 'linear-gradient(135deg, #ef4444, #f59e0b)',
               WebkitBackgroundClip: 'text',
               WebkitTextFillColor: 'transparent',
-            }}>Values</span>
-            <br />& Trading Hub
+            }}>scammed</span>
+            <br />
+            in Blox Fruits trades.
           </h1>
 
           <p style={{
-            fontSize: '18px', color: '#94a3b8',
-            lineHeight: '1.7', marginBottom: '40px',
-            maxWidth: '560px', margin: '0 auto 40px',
+            fontSize: '18px',
+            color: '#94a3b8',
+            lineHeight: '1.6',
+            marginBottom: '40px',
+            maxWidth: '580px',
+            margin: '0 auto 40px',
           }}>
-            The ultimate hub for Blox Fruits trading. Discover real-time values,
-            create trade ads, and connect with our trusted community.
+            Real-time fruit values, trade ads, and a calculator that tells you
+            instantly if a trade is fair. Built by traders, for traders.
           </p>
 
-          <div style={{ display: 'flex', gap: '16px', justifyContent: 'center', flexWrap: 'wrap' }}>
-            <Link href="/trading" style={{
-              background: 'linear-gradient(135deg, #3b82f6, #8b5cf6)',
-              color: '#fff', textDecoration: 'none',
-              padding: '14px 32px', borderRadius: '12px',
-              fontSize: '16px', fontWeight: '700',
-              boxShadow: '0 0 30px rgba(59,130,246,0.3)',
-            }}>
-              Start Trading →
-            </Link>
+          <div style={{ display: 'flex', gap: '12px', justifyContent: 'center', flexWrap: 'wrap' }}>
             <Link href="/values" style={{
-              background: 'rgba(255,255,255,0.05)',
-              border: '1px solid rgba(255,255,255,0.1)',
-              color: '#fff', textDecoration: 'none',
-              padding: '14px 32px', borderRadius: '12px',
-              fontSize: '16px', fontWeight: '700',
+              display: 'inline-flex',
+              alignItems: 'center',
+              gap: '8px',
+              background: 'linear-gradient(135deg, #10b981, #059669)',
+              color: '#fff',
+              padding: '16px 32px',
+              borderRadius: '12px',
+              fontSize: '15px',
+              fontWeight: '700',
+              boxShadow: '0 0 30px rgba(16, 185, 129, 0.4)',
             }}>
-              View Values
+              Check Fruit Values
+              <ArrowRight size={18} strokeWidth={2.5} />
+            </Link>
+            <Link href="/calculator" style={{
+              display: 'inline-flex',
+              alignItems: 'center',
+              gap: '8px',
+              background: 'rgba(241, 245, 249, 0.05)',
+              border: '1px solid rgba(241, 245, 249, 0.1)',
+              color: '#f1f5f9',
+              padding: '16px 32px',
+              borderRadius: '12px',
+              fontSize: '15px',
+              fontWeight: '700',
+            }}>
+              <Calculator size={18} strokeWidth={2.5} />
+              Open Calculator
             </Link>
           </div>
         </div>
-      </div>
+      </section>
 
-      {/* Stats */}
-      <div style={{
-        maxWidth: '1200px', margin: '0 auto',
-        padding: '0 24px 80px',
-        display: 'grid',
-        gridTemplateColumns: 'repeat(auto-fit, minmax(150px, 1fr))',
-        gap: '24px',
-      }}>
-        {stats.map((stat) => (
-          <div key={stat.label} style={{
-            background: 'rgba(255,255,255,0.03)',
-            border: '1px solid rgba(255,255,255,0.08)',
-            borderRadius: '16px',
-            padding: '24px',
-            textAlign: 'center',
-          }}>
-            <div style={{
-              fontSize: '36px', fontWeight: '800',
-              background: 'linear-gradient(135deg, #3b82f6, #8b5cf6)',
-              WebkitBackgroundClip: 'text',
-              WebkitTextFillColor: 'transparent',
-            }}>{stat.value}</div>
-            <div style={{ color: '#64748b', fontSize: '14px', marginTop: '4px' }}>{stat.label}</div>
-          </div>
-        ))}
-      </div>
-
-      {/* Features */}
-      <div style={{ maxWidth: '1200px', margin: '0 auto', padding: '0 24px 100px' }}>
-        <h2 style={{
-          fontSize: '36px', fontWeight: '800',
-          textAlign: 'center', marginBottom: '48px',
-        }}>
-          Everything you need to{' '}
-          <span style={{
-            background: 'linear-gradient(135deg, #3b82f6, #8b5cf6)',
-            WebkitBackgroundClip: 'text',
-            WebkitTextFillColor: 'transparent',
-          }}>trade smart</span>
-        </h2>
-
+      {/* STATS */}
+      <section style={{ padding: '40px 24px 80px', position: 'relative', zIndex: 1 }}>
         <div style={{
+          maxWidth: '1000px',
+          margin: '0 auto',
           display: 'grid',
-          gridTemplateColumns: 'repeat(auto-fit, minmax(320px, 1fr))',
-          gap: '20px',
+          gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))',
+          gap: '16px',
         }}>
-          {features.map((feature) => (
-            <Link key={feature.href} href={feature.href} style={{ textDecoration: 'none' }}>
-              <div style={{
-                background: 'rgba(255,255,255,0.03)',
-                border: '1px solid rgba(255,255,255,0.08)',
+          {stats.map((stat) => {
+            const Icon = stat.icon;
+            return (
+              <div key={stat.label} style={{
+                background: 'rgba(241, 245, 249, 0.03)',
+                border: '1px solid rgba(241, 245, 249, 0.06)',
                 borderRadius: '16px',
-                padding: '28px',
-                cursor: 'pointer',
-                transition: 'all 0.2s',
-                height: '100%',
-              }}
-                onMouseEnter={e => {
-                  (e.currentTarget as HTMLElement).style.border = `1px solid ${feature.color}40`;
-                  (e.currentTarget as HTMLElement).style.background = `rgba(255,255,255,0.05)`;
-                  (e.currentTarget as HTMLElement).style.transform = 'translateY(-2px)';
-                }}
-                onMouseLeave={e => {
-                  (e.currentTarget as HTMLElement).style.border = '1px solid rgba(255,255,255,0.08)';
-                  (e.currentTarget as HTMLElement).style.background = 'rgba(255,255,255,0.03)';
-                  (e.currentTarget as HTMLElement).style.transform = 'translateY(0)';
-                }}
-              >
+                padding: '24px 20px',
+                display: 'flex',
+                alignItems: 'center',
+                gap: '16px',
+              }}>
                 <div style={{
-                  width: '48px', height: '48px',
-                  background: `${feature.color}20`,
-                  border: `1px solid ${feature.color}40`,
+                  width: '48px',
+                  height: '48px',
                   borderRadius: '12px',
-                  display: 'flex', alignItems: 'center', justifyContent: 'center',
-                  fontSize: '24px', marginBottom: '16px',
-                }}>{feature.icon}</div>
-                <h3 style={{ fontSize: '18px', fontWeight: '700', color: '#fff', marginBottom: '8px' }}>
-                  {feature.title}
-                </h3>
-                <p style={{ fontSize: '14px', color: '#64748b', lineHeight: '1.6' }}>
-                  {feature.description}
-                </p>
+                  background: `${stat.color}15`,
+                  border: `1px solid ${stat.color}30`,
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  color: stat.color,
+                  flexShrink: 0,
+                }}>
+                  <Icon size={22} strokeWidth={2.2} />
+                </div>
+                <div>
+                  <div style={{
+                    fontSize: '24px',
+                    fontWeight: '900',
+                    color: stat.color,
+                    letterSpacing: '-0.02em',
+                    lineHeight: '1',
+                  }}>{stat.value}</div>
+                  <div style={{
+                    fontSize: '11px',
+                    color: '#64748b',
+                    fontWeight: '600',
+                    textTransform: 'uppercase',
+                    letterSpacing: '0.05em',
+                    marginTop: '4px',
+                  }}>{stat.label}</div>
+                </div>
               </div>
-            </Link>
-          ))}
+            );
+          })}
         </div>
-      </div>
+      </section>
+
+      {/* FEATURES */}
+      <section style={{ padding: '60px 24px 100px', position: 'relative', zIndex: 1 }}>
+        <div style={{ maxWidth: '1200px', margin: '0 auto' }}>
+
+          <div style={{ textAlign: 'center', marginBottom: '60px' }}>
+            <div style={{
+              display: 'inline-flex',
+              alignItems: 'center',
+              gap: '6px',
+              fontSize: '13px',
+              color: '#10b981',
+              fontWeight: '700',
+              textTransform: 'uppercase',
+              letterSpacing: '0.1em',
+              marginBottom: '12px',
+            }}>
+              <Sparkles size={14} strokeWidth={2.5} />
+              What we do
+            </div>
+            <h2 style={{
+              fontSize: 'clamp(32px, 5vw, 48px)',
+              fontWeight: '900',
+              letterSpacing: '-0.02em',
+            }}>
+              Everything traders need.<br />
+              <span style={{ color: '#64748b' }}>Nothing they don&apos;t.</span>
+            </h2>
+          </div>
+
+          <div style={{
+            display: 'grid',
+            gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))',
+            gap: '16px',
+          }}>
+            {features.map((f) => {
+              const Icon = f.icon;
+              const isHovered = hovered === f.href;
+              return (
+                <Link
+                  key={f.href}
+                  href={f.href}
+                  onMouseEnter={() => setHovered(f.href)}
+                  onMouseLeave={() => setHovered(null)}
+                >
+                  <div style={{
+                    background: isHovered ? 'rgba(241, 245, 249, 0.05)' : 'rgba(241, 245, 249, 0.02)',
+                    border: `1px solid ${isHovered ? f.accent + '60' : 'rgba(241, 245, 249, 0.06)'}`,
+                    borderRadius: '16px',
+                    padding: '28px',
+                    height: '100%',
+                    transition: 'all 0.2s',
+                    transform: isHovered ? 'translateY(-4px)' : 'translateY(0)',
+                    boxShadow: isHovered ? `0 10px 30px ${f.accent}20` : 'none',
+                  }}>
+                    <div style={{
+                      width: '52px',
+                      height: '52px',
+                      background: `${f.accent}15`,
+                      border: `1px solid ${f.accent}30`,
+                      borderRadius: '12px',
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      color: f.accent,
+                      marginBottom: '20px',
+                    }}>
+                      <Icon size={24} strokeWidth={2.2} />
+                    </div>
+
+                    <h3 style={{
+                      fontSize: '18px',
+                      fontWeight: '700',
+                      marginBottom: '8px',
+                      color: '#f1f5f9',
+                    }}>{f.title}</h3>
+
+                    <p style={{
+                      fontSize: '14px',
+                      color: '#94a3b8',
+                      lineHeight: '1.6',
+                    }}>{f.desc}</p>
+                  </div>
+                </Link>
+              );
+            })}
+          </div>
+        </div>
+      </section>
 
       {/* CTA */}
-      <div style={{
-        margin: '0 24px 100px',
-        background: 'linear-gradient(135deg, rgba(59,130,246,0.1), rgba(139,92,246,0.1))',
-        border: '1px solid rgba(59,130,246,0.2)',
-        borderRadius: '24px',
-        padding: '60px 24px',
-        textAlign: 'center',
-        maxWidth: '1200px',
-        marginLeft: 'auto',
-        marginRight: 'auto',
-      }}>
-        <h2 style={{ fontSize: '36px', fontWeight: '800', marginBottom: '16px' }}>
-          Ready to start trading?
-        </h2>
-        <p style={{ color: '#94a3b8', fontSize: '16px', marginBottom: '32px' }}>
-          Join thousands of traders already using BloxValues
-        </p>
-        <Link href="/trading" style={{
-          background: 'linear-gradient(135deg, #3b82f6, #8b5cf6)',
-          color: '#fff', textDecoration: 'none',
-          padding: '14px 40px', borderRadius: '12px',
-          fontSize: '16px', fontWeight: '700',
-          boxShadow: '0 0 30px rgba(59,130,246,0.3)',
+      <section style={{ padding: '40px 24px 100px', position: 'relative', zIndex: 1 }}>
+        <div style={{
+          maxWidth: '900px',
+          margin: '0 auto',
+          background: 'linear-gradient(135deg, rgba(16, 185, 129, 0.08), rgba(59, 130, 246, 0.05))',
+          border: '1px solid rgba(16, 185, 129, 0.2)',
+          borderRadius: '24px',
+          padding: '60px 32px',
+          textAlign: 'center',
         }}>
-          Browse Trade Ads →
-        </Link>
-      </div>
+          <h2 style={{
+            fontSize: 'clamp(28px, 4vw, 40px)',
+            fontWeight: '900',
+            marginBottom: '16px',
+            letterSpacing: '-0.02em',
+          }}>
+            Your next trade could be a win.
+          </h2>
+          <p style={{
+            color: '#94a3b8',
+            fontSize: '16px',
+            marginBottom: '32px',
+          }}>
+            Or a loss. Check before you click accept.
+          </p>
+          <Link href="/calculator" style={{
+            display: 'inline-flex',
+            alignItems: 'center',
+            gap: '8px',
+            background: 'linear-gradient(135deg, #10b981, #059669)',
+            color: '#fff',
+            padding: '16px 40px',
+            borderRadius: '12px',
+            fontSize: '15px',
+            fontWeight: '700',
+            boxShadow: '0 0 30px rgba(16, 185, 129, 0.4)',
+          }}>
+            <Calculator size={18} strokeWidth={2.5} />
+            Open Trade Calculator
+            <ArrowRight size={18} strokeWidth={2.5} />
+          </Link>
+        </div>
+      </section>
+
+      {/* Footer */}
+      <footer style={{
+        borderTop: '1px solid rgba(241, 245, 249, 0.06)',
+        padding: '40px 24px',
+        textAlign: 'center',
+        color: '#475569',
+        fontSize: '13px',
+      }}>
+        <div style={{ maxWidth: '1200px', margin: '0 auto' }}>
+          BloxValues © 2026 · Not affiliated with Roblox or Gamer Robot Inc.
+        </div>
+      </footer>
 
     </div>
   );
