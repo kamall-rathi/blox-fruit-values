@@ -1,9 +1,10 @@
 'use client';
 
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useEffect } from 'react';
 import Link from 'next/link';
-import { Plus, Search, Filter, Clock, User, ArrowRight, Sparkles, MessageCircle, ShieldCheck, X } from 'lucide-react';
+import { Plus, Search, Filter, Clock, ArrowRight, Sparkles, MessageCircle, ShieldCheck } from 'lucide-react';
 import { FRUITS, RARITY_COLORS, formatValue, Fruit } from '@/lib/fruits';
+import { supabase, TradeAdRecord } from '@/lib/supabase';
 
 interface TradeAd {
   id: string;
@@ -16,96 +17,54 @@ interface TradeAd {
   postedMinsAgo: number;
 }
 
-// Fake data for now — will pull from Supabase later
-const findFruit = (id: string) => FRUITS.find(f => f.id === id)!;
-
-const DEMO_ADS: TradeAd[] = [
-  {
-    id: '1',
-    user: 'KingTrader7',
-    verified: true,
-    rating: 4.9,
-    offering: [findFruit('dragon')],
-    requesting: [findFruit('kitsune'), findFruit('dough')],
-    note: 'Need both, will add gamepass if needed',
-    postedMinsAgo: 3,
-  },
-  {
-    id: '2',
-    user: 'BloxKing',
-    verified: false,
-    rating: 4.2,
-    offering: [findFruit('dough'), findFruit('venom')],
-    requesting: [findFruit('leopard')],
-    postedMinsAgo: 12,
-  },
-  {
-    id: '3',
-    user: 'FruitHunter',
-    verified: true,
-    rating: 5.0,
-    offering: [findFruit('kitsune')],
-    requesting: [findFruit('west-dragon')],
-    note: 'Perm only',
-    postedMinsAgo: 27,
-  },
-  {
-    id: '4',
-    user: 'SeaPirate99',
-    verified: false,
-    rating: 3.8,
-    offering: [findFruit('buddha'), findFruit('rumble')],
-    requesting: [findFruit('spirit')],
-    postedMinsAgo: 41,
-  },
-  {
-    id: '5',
-    user: 'MythicMaster',
-    verified: true,
-    rating: 4.7,
-    offering: [findFruit('control'), findFruit('shadow')],
-    requesting: [findFruit('dragon')],
-    note: 'Open to negotiation',
-    postedMinsAgo: 58,
-  },
-  {
-    id: '6',
-    user: 'NoobButRich',
-    verified: false,
-    rating: 4.1,
-    offering: [findFruit('portal')],
-    requesting: [findFruit('paw'), findFruit('gravity')],
-    postedMinsAgo: 95,
-  },
-  {
-    id: '7',
-    user: 'TradingGod',
-    verified: true,
-    rating: 4.95,
-    offering: [findFruit('trex'), findFruit('mammoth')],
-    requesting: [findFruit('kitsune')],
-    note: 'Perm for perm',
-    postedMinsAgo: 120,
-  },
-  {
-    id: '8',
-    user: 'CasualFlipper',
-    verified: false,
-    rating: 4.0,
-    offering: [findFruit('phoenix'), findFruit('blizzard')],
-    requesting: [findFruit('buddha')],
-    postedMinsAgo: 180,
-  },
-];
+const findFruit = (id: string) => FRUITS.find(f => f.id === id);
 
 type FilterType = 'all' | 'verified' | 'recent';
 
 export default function TradingPage() {
   const [filter, setFilter] = useState<FilterType>('all');
   const [search, setSearch] = useState('');
+  const [ads, setAds] = useState<TradeAd[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    loadAds();
+  }, []);
+
+  async function loadAds() {
+    setLoading(true);
+    const { data, error } = await supabase
+      .from('trade_ads')
+      .select('*, profiles(username, verified, rating)')
+      .eq('status', 'active')
+      .order('created_at', { ascending: false });
+
+    if (error) {
+      console.error('Error loading ads:', error);
+      setLoading(false);
+      return;
+    }
+
+    const minsAgo = (created: string) =>
+      Math.floor((Date.now() - new Date(created).getTime()) / 60000);
+
+    const mapped: TradeAd[] = (data as TradeAdRecord[]).map(r => ({
+      id: r.id,
+      user: r.profiles?.username || 'Unknown',
+      verified: r.profiles?.verified || false,
+      rating: r.profiles?.rating || 0,
+      offering: r.offering.map(findFruit).filter(Boolean) as Fruit[],
+      requesting: r.requesting.map(findFruit).filter(Boolean) as Fruit[],
+      note: r.note || undefined,
+      postedMinsAgo: minsAgo(r.created_at),
+    }));
+
+    setAds(mapped);
+    setLoading(false);
+  }
 
   const filtered = useMemo(() => {
-    let result = [...DEMO_ADS];
+    let result = [...ads];
     if (filter === 'verified') result = result.filter(a => a.verified);
     if (filter === 'recent') result = result.filter(a => a.postedMinsAgo < 60);
     if (search.trim()) {
@@ -117,9 +76,10 @@ export default function TradingPage() {
       );
     }
     return result;
-  }, [filter, search]);
+  }, [filter, search, ads]);
 
   const timeAgo = (mins: number) => {
+    if (mins < 1) return 'just now';
     if (mins < 60) return `${mins}m ago`;
     if (mins < 1440) return `${Math.floor(mins / 60)}h ago`;
     return `${Math.floor(mins / 1440)}d ago`;
@@ -160,7 +120,7 @@ export default function TradingPage() {
               }}>Ads</span>
             </h1>
             <p style={{ fontSize: '16px', color: '#94a3b8' }}>
-              {filtered.length} active trades from verified players
+              {loading ? 'Loading...' : `${filtered.length} active trades`}
             </p>
           </div>
 
@@ -181,11 +141,8 @@ export default function TradingPage() {
 
         {/* Filters */}
         <div style={{
-          display: 'flex',
-          gap: '12px',
-          marginBottom: '32px',
-          flexWrap: 'wrap',
-          alignItems: 'center',
+          display: 'flex', gap: '12px',
+          marginBottom: '32px', flexWrap: 'wrap', alignItems: 'center',
         }}>
           <div style={{ position: 'relative', flex: '1', minWidth: '220px' }}>
             <Search size={16} strokeWidth={2.2} style={{
@@ -212,8 +169,8 @@ export default function TradingPage() {
 
           {([
             { id: 'all', label: 'All Trades' },
-            { id: 'verified', label: 'Verified Only', icon: ShieldCheck },
-            { id: 'recent', label: 'Recent (< 1h)', icon: Clock },
+            { id: 'verified', label: 'Verified', icon: ShieldCheck },
+            { id: 'recent', label: 'Recent', icon: Clock },
           ] as { id: FilterType; label: string; icon?: typeof Clock }[]).map(opt => {
             const Icon = opt.icon;
             return (
@@ -227,7 +184,6 @@ export default function TradingPage() {
                 fontSize: '13px',
                 fontWeight: '700',
                 cursor: 'pointer',
-                transition: 'all 0.15s',
               }}>
                 {Icon && <Icon size={14} strokeWidth={2.5} />}
                 {opt.label}
@@ -236,21 +192,62 @@ export default function TradingPage() {
           })}
         </div>
 
-        {/* Trade Ads Grid */}
-        <div style={{
-          display: 'grid',
-          gridTemplateColumns: 'repeat(auto-fill, minmax(380px, 1fr))',
-          gap: '16px',
-        }}>
-          {filtered.map(ad => (
-            <TradeAdCard key={ad.id} ad={ad} timeAgo={timeAgo} />
-          ))}
-        </div>
+        {/* Loading state */}
+        {loading && (
+          <div style={{ textAlign: 'center', padding: '80px 20px', color: '#64748b' }}>
+            <div style={{ fontSize: '16px', fontWeight: '600' }}>Loading trades...</div>
+          </div>
+        )}
 
-        {filtered.length === 0 && (
+        {/* Empty state */}
+        {!loading && filtered.length === 0 && ads.length === 0 && (
+          <div style={{
+            textAlign: 'center',
+            padding: '80px 20px',
+            background: 'rgba(241,245,249,0.02)',
+            border: '1px dashed rgba(241,245,249,0.1)',
+            borderRadius: '20px',
+          }}>
+            <Sparkles size={40} style={{ margin: '0 auto 16px', opacity: 0.5, color: '#10b981' }} />
+            <div style={{ fontSize: '20px', fontWeight: '800', marginBottom: '8px' }}>
+              No trades yet — be the first!
+            </div>
+            <div style={{ fontSize: '14px', color: '#94a3b8', marginBottom: '24px' }}>
+              Post your trade and start the marketplace.
+            </div>
+            <Link href="/trading/new" style={{
+              display: 'inline-flex', alignItems: 'center', gap: '8px',
+              background: 'linear-gradient(135deg, #10b981, #059669)',
+              color: '#fff',
+              padding: '12px 24px',
+              borderRadius: '10px',
+              fontSize: '14px',
+              fontWeight: '700',
+            }}>
+              <Plus size={16} strokeWidth={2.5} />
+              Post First Trade
+            </Link>
+          </div>
+        )}
+
+        {/* No filter results */}
+        {!loading && filtered.length === 0 && ads.length > 0 && (
           <div style={{ textAlign: 'center', padding: '80px 20px', color: '#64748b' }}>
             <Filter size={40} style={{ margin: '0 auto 16px', opacity: 0.5 }} />
             <div style={{ fontSize: '16px', fontWeight: '600' }}>No trades match your filters</div>
+          </div>
+        )}
+
+        {/* Trade Ads Grid */}
+        {!loading && filtered.length > 0 && (
+          <div style={{
+            display: 'grid',
+            gridTemplateColumns: 'repeat(auto-fill, minmax(380px, 1fr))',
+            gap: '16px',
+          }}>
+            {filtered.map(ad => (
+              <TradeAdCard key={ad.id} ad={ad} timeAgo={timeAgo} />
+            ))}
           </div>
         )}
 
@@ -264,7 +261,7 @@ function TradeAdCard({ ad, timeAgo }: { ad: TradeAd; timeAgo: (m: number) => str
 
   const offerTotal = ad.offering.reduce((s, f) => s + f.permanentValue, 0);
   const requestTotal = ad.requesting.reduce((s, f) => s + f.permanentValue, 0);
-  const diff = ((offerTotal - requestTotal) / requestTotal) * 100;
+  const diff = requestTotal > 0 ? ((offerTotal - requestTotal) / requestTotal) * 100 : 0;
   const isWin = Math.abs(diff) < 10 ? 'fair' : diff > 0 ? 'over' : 'under';
   const fairnessColor = isWin === 'fair' ? '#3b82f6' : isWin === 'over' ? '#10b981' : '#f59e0b';
 
@@ -279,14 +276,10 @@ function TradeAdCard({ ad, timeAgo }: { ad: TradeAd; timeAgo: (m: number) => str
         padding: '20px',
         transition: 'all 0.2s',
         transform: hovered ? 'translateY(-2px)' : 'translateY(0)',
-        boxShadow: hovered ? '0 10px 30px rgba(16,185,129,0.1)' : 'none',
       }}>
 
-      {/* User row */}
       <div style={{
-        display: 'flex',
-        justifyContent: 'space-between',
-        alignItems: 'center',
+        display: 'flex', justifyContent: 'space-between', alignItems: 'center',
         marginBottom: '16px',
       }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
@@ -302,45 +295,35 @@ function TradeAdCard({ ad, timeAgo }: { ad: TradeAd; timeAgo: (m: number) => str
           <div>
             <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
               <span style={{ fontSize: '14px', fontWeight: '700', color: '#f1f5f9' }}>{ad.user}</span>
-              {ad.verified && (
-                <ShieldCheck size={14} strokeWidth={2.5} style={{ color: '#10b981' }} />
-              )}
+              {ad.verified && <ShieldCheck size={14} strokeWidth={2.5} style={{ color: '#10b981' }} />}
             </div>
             <div style={{ fontSize: '11px', color: '#64748b', fontWeight: '600' }}>
-              ⭐ {ad.rating} · {timeAgo(ad.postedMinsAgo)}
+              ⭐ {ad.rating.toFixed(1)} · {timeAgo(ad.postedMinsAgo)}
             </div>
           </div>
         </div>
 
         <div style={{
-          fontSize: '10px',
-          fontWeight: '700',
+          fontSize: '10px', fontWeight: '700',
           color: fairnessColor,
           background: `${fairnessColor}15`,
           border: `1px solid ${fairnessColor}40`,
-          padding: '4px 8px',
-          borderRadius: '6px',
-          textTransform: 'uppercase',
-          letterSpacing: '0.05em',
+          padding: '4px 8px', borderRadius: '6px',
+          textTransform: 'uppercase', letterSpacing: '0.05em',
         }}>
           {isWin === 'fair' ? 'Fair' : isWin === 'over' ? `+${diff.toFixed(0)}%` : `${diff.toFixed(0)}%`}
         </div>
       </div>
 
-      {/* Offering / Requesting */}
       <div style={{
-        display: 'grid',
-        gridTemplateColumns: '1fr auto 1fr',
-        gap: '10px',
-        alignItems: 'center',
-        marginBottom: '14px',
+        display: 'grid', gridTemplateColumns: '1fr auto 1fr',
+        gap: '10px', alignItems: 'center', marginBottom: '14px',
       }}>
         <FruitStack label="OFFERING" fruits={ad.offering} accent="#10b981" />
         <ArrowRight size={20} strokeWidth={2.5} style={{ color: '#475569' }} />
         <FruitStack label="WANTS" fruits={ad.requesting} accent="#3b82f6" />
       </div>
 
-      {/* Note */}
       {ad.note && (
         <div style={{
           background: 'rgba(241,245,249,0.03)',
@@ -356,7 +339,6 @@ function TradeAdCard({ ad, timeAgo }: { ad: TradeAd; timeAgo: (m: number) => str
         </div>
       )}
 
-      {/* Action button */}
       <button style={{
         width: '100%',
         background: hovered ? 'linear-gradient(135deg, #10b981, #059669)' : 'rgba(16, 185, 129, 0.1)',
@@ -367,16 +349,13 @@ function TradeAdCard({ ad, timeAgo }: { ad: TradeAd; timeAgo: (m: number) => str
         fontSize: '13px',
         fontWeight: '700',
         cursor: 'pointer',
-        display: 'inline-flex',
-        alignItems: 'center',
-        justifyContent: 'center',
+        display: 'inline-flex', alignItems: 'center', justifyContent: 'center',
         gap: '6px',
         transition: 'all 0.2s',
       }}>
         <MessageCircle size={14} strokeWidth={2.5} />
         Message Trader
       </button>
-
     </div>
   );
 }
@@ -385,21 +364,16 @@ function FruitStack({ label, fruits, accent }: { label: string; fruits: Fruit[];
   return (
     <div>
       <div style={{
-        fontSize: '9px',
-        fontWeight: '700',
-        color: accent,
-        letterSpacing: '0.1em',
-        textTransform: 'uppercase',
-        marginBottom: '6px',
+        fontSize: '9px', fontWeight: '700',
+        color: accent, letterSpacing: '0.1em',
+        textTransform: 'uppercase', marginBottom: '6px',
       }}>{label}</div>
       <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
         {fruits.map((f, i) => {
           const colors = RARITY_COLORS[f.rarity];
           return (
             <div key={i} style={{
-              display: 'flex',
-              alignItems: 'center',
-              gap: '8px',
+              display: 'flex', alignItems: 'center', gap: '8px',
               background: colors.bg,
               border: `1px solid ${colors.border}`,
               borderRadius: '8px',
@@ -408,12 +382,8 @@ function FruitStack({ label, fruits, accent }: { label: string; fruits: Fruit[];
               <div style={{ fontSize: '18px' }}>{f.emoji}</div>
               <div style={{ flex: 1, overflow: 'hidden' }}>
                 <div style={{
-                  fontSize: '12px',
-                  fontWeight: '700',
-                  color: '#f1f5f9',
-                  whiteSpace: 'nowrap',
-                  overflow: 'hidden',
-                  textOverflow: 'ellipsis',
+                  fontSize: '12px', fontWeight: '700', color: '#f1f5f9',
+                  whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis',
                 }}>{f.name}</div>
                 <div style={{ fontSize: '10px', color: colors.text, fontWeight: '700' }}>
                   {formatValue(f.permanentValue)}
